@@ -3,253 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LogiClick PRO - Desafio das Palavras</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <title>LogiClick PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --azul-primary: #1A1AAB;
-            --fundo-creme: #FEFEE2;
-            --laranja-destaque: #e67e22;
-            --sucesso: #28a745;
-            --erro: #e74c3c;
+            --verde: #58CC02;
+            --verde-dark: #46A302;
+            --erro: #FF4B4B;
+            --azul: #1CB0F6;
+            --texto: #3C3C3C;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            text-align: center;
-            background-color: var(--fundo-creme);
-            margin: 0; padding: 0;
-            min-height: 100vh;
-            user-select: none;
+            margin: 0; background: #FFF; color: var(--texto);
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
 
+        /* Header */
         header {
-            background-color: var(--azul-primary);
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            padding: 15px 25px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 2px solid #E5E5E5;
         }
 
-        .status-container {
-            display: flex;
-            gap: 20px;
-            align-items: center;
+        .vidas { font-size: 1.4rem; letter-spacing: 5px; }
+        .score { font-weight: bold; color: var(--azul); }
+
+        /* Area do Jogo */
+        .game {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
         }
 
-        .vidas { font-size: 1.5rem; color: #ff4757; }
+        #emoji { font-size: 5rem; margin-bottom: 10px; }
         
-        #fase-badge {
-            background: var(--laranja-destaque);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
-
-        /* Estilo da Palavra e Emoji */
-        #emoji-display { font-size: 4rem; margin-top: 20px; display: block; }
         #palavra {
-            font-size: 3rem;
-            letter-spacing: 5px;
-            margin: 20px 0;
+            font-family: 'Righteous', cursive;
+            font-size: 3.5rem; letter-spacing: 10px; margin-bottom: 40px;
             text-transform: uppercase;
-            font-family: 'Montserrat', sans-serif;
         }
 
         .lacuna {
-            color: var(--laranja-destaque);
-            border-bottom: 5px solid var(--laranja-destaque);
-            min-width: 30px;
-            display: inline-block;
+            color: #CCC; border-bottom: 5px solid #CCC;
+            display: inline-block; min-width: 45px; text-align: center;
         }
 
-        /* Opções */
-        .opcoes-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 30px;
+        /* Botões Estilo Duolingo */
+        .opcoes {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 15px; width: 100%; max-width: 450px;
         }
 
-        .card {
-            padding: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 15px;
-            background: white;
-            box-shadow: 0 5px 0 #ddd;
-            cursor: pointer;
-            transition: 0.1s;
+        .btn-opcao {
+            background: white; border: 2px solid #E5E5E5; border-bottom: 6px solid #E5E5E5;
+            border-radius: 15px; padding: 20px; font-size: 1.6rem; font-weight: bold;
+            cursor: pointer; transition: 0.1s; font-family: 'Righteous';
         }
 
-        .card:active { transform: translateY(3px); box-shadow: 0 2px 0 #ddd; }
-        .card:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-opcao:active { border-bottom-width: 2px; transform: translateY(4px); }
+        .btn-opcao.errado { border-color: var(--erro); color: var(--erro); animation: shake 0.4s; }
+        .btn-opcao.correto { border-color: var(--verde); color: var(--verde); }
 
-        /* Overlay de Bloqueio (Vidas Esgotadas) */
-        #overlay-bloqueio {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            z-index: 100;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
 
-        #timer-recuperacao { font-size: 2rem; color: var(--laranja-destaque); margin-top: 10px; }
+        /* Tela de Bloqueio */
+        #bloqueio {
+            display: none; position: fixed; inset: 0; background: white;
+            z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+        }
+
+        #timer { font-size: 3rem; font-weight: bold; color: var(--erro); margin: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="overlay-bloqueio">
-        <h2>Vidas Esgotadas! 💔</h2>
+    <div id="bloqueio">
+        <h1 style="font-size: 4rem;">💔</h1>
+        <h2>Vidas Esgotadas!</h2>
         <p>Recuperando energia em:</p>
-        <div id="timer-recuperacao">00:00</div>
+        <div id="timer">10:00</div>
     </div>
 
     <header>
-        <div id="fase-badge">Fase 1</div>
-        <div class="status-container">
-            <div class="vidas" id="coracoes">❤️❤️❤️</div>
-        </div>
+        <div class="score" id="fase-txt">FASE: 1</div>
+        <div class="vidas" id="coracoes">❤️❤️❤️</div>
     </header>
 
-    <div class="container">
-        <span id="emoji-display">❓</span>
-        <h2 id="palavra"></h2>
-        <div id="opcoes" class="opcoes-container"></div>
-        <h3 id="feedback"></h3>
+    <div class="game">
+        <div id="emoji">❓</div>
+        <div id="palavra"></div>
+        <div class="opcoes" id="container-opcoes"></div>
     </div>
 
     <script>
-        // CONFIGURAÇÕES DO MODO PROFISSIONAL
-        const TEMPO_RECUPERACAO_MS = 10 * 60 * 1000; // 10 minutos
-        const MAX_VIDAS = 3;
-
-        // BANCO DE PALAVRAS (Exemplos de diversos tipos)
-        const bancoPalavras = [
-            ["C_S_", "A", "🏠", "vogal"], ["B_L_", "O", "⚽", "vogal"], ["G_T_", "A", "🐱", "vogal"],
-            ["ED_C_ÇÃO", "U", "🎓", "vogal"], ["C_CH_RRO", "O", "🐶", "vogal"], ["_CA", "O", "🍇", "vogal"],
-            ["P_N_LA", "E", "🍳", "vogal"], ["B_N_CA", "E", "🪆", "vogal"], ["C_RRO", "A", "🚗", "vogal"],
-            ["I_REJA", "G", "⛪", "consoante"], ["CO_E_O", "LH", "🐰", "digrafo"], ["MI_O", "LH", "🌽", "digrafo"],
-            ["FE_O", "RR", "🛠️", "digrafo"], ["TE_A", "RR", "🌍", "digrafo"], ["A_OZ", "RR", "🍚", "digrafo"],
-            ["PA_ARO", "SS", "🐦", "digrafo"], ["O_O", "SS", "🐻", "digrafo"], ["PE_OA", "SS", "👤", "digrafo"],
-            ["BI_ICLETA", "C", "🚲", "consoante"], ["CHU_A", "V", "🌧️", "consoante"], ["ES_OLA", "C", "🏫", "consoante"],
-            ["A_ELHA", "B", "🐝", "consoante"], ["JA_ARÉ", "C", "🐊", "consoante"], ["GI_AFA", "R", "🦒", "consoante"],
-            ["BRA_IL", "S", "🇧🇷", "consoante"], ["A_UL", "Z", "🟦", "consoante"], ["AR_ORE", "V", "🌳", "consoante"],
-            ["SA_ATO", "P", "👞", "consoante"], ["CO_RA", "B", "🐍", "consoante"], ["PI_A", "ZZ", "🍕", "digrafo"],
-            ["FLU_TU_R", "A", "🎈", "vogal"], ["_LEFANTE", "E", "🐘", "vogal"], ["_ONIBUS", "O", "🚌", "vogal"],
-            ["M_R_NG_O", "A", "🍓", "vogal"], ["_AC_CO", "M", "🐒", "consoante"], ["G_L_NHA", "A", "🐔", "vogal"]
-            // Nota: Você pode expandir esta lista até 200 facilmente seguindo o padrão.
+        // BANCO DE DADOS (Expanda até 200 aqui)
+        const banco = [
+            ["C_SA", "A", "🏠"], ["B_LA", "O", "⚽"], ["G_TO", "A", "🐱"],
+            ["P_TO", "A", "🦆"], ["M_SA", "E", "🪑"], ["L_VRO", "I", "📖"],
+            ["ED_CAÇ_O", "U", "🎓"], ["CA_ORRO", "CH", "🐶"], ["CO_E_O", "LH", "🐰"],
+            ["_ONIBUS", "O", "🚌"], ["_LEFANTE", "E", "🐘"], ["P_NELA", "A", "🍳"],
+            ["PI_A", "ZZ", "🍕"], ["G_TARRA", "UI", "🎸"], ["FR_TA", "U", "🍎"],
+            ["_RAC_", "A", "🕷️"], ["B_RCO", "A", "⛵"], ["_V_ÃO", "A", "✈️"],
+            ["ES_OLA", "C", "🏫"], ["FLO_ESTA", "R", "🌲"], ["G_RAFA", "I", "🦒"],
+            ["_R_IA", "A", "🏖️"], ["S_P_TO", "A", "👞"], ["B_NECA", "O", "🪆"],
+            ["C_RRO", "A", "🚗"], ["M_C_CO", "A", "🐒"], ["_VA", "U", "🍇"],
+            ["_VO", "O", "🥚"], ["L_ITE", "E", "🥛"], ["P_O", "Ã", "🍞"]
+            // Adicione mais seguindo o padrão ["P_L_VRA", "Letra", "Emoji"]
         ];
 
+        let vidas = parseInt(localStorage.getItem('logi_vidas')) || 3;
         let fase = 1;
-        let vidas = parseInt(localStorage.getItem('logiclick_vidas')) || MAX_VIDAS;
-        let bloqueado = false;
 
-        function atualizarVidasUI() {
-            document.getElementById('coracoes').innerText = "❤️".repeat(vidas) + "🖤".repeat(MAX_VIDAS - vidas);
-            localStorage.setItem('logiclick_vidas', vidas);
-            
-            if (vidas <= 0) {
-                verificarBloqueio();
-            }
+        function atualizarVidas() {
+            document.getElementById('coracoes').innerText = "❤️".repeat(vidas) + "🖤".repeat(3 - vidas);
+            localStorage.setItem('logi_vidas', vidas);
+            if(vidas <= 0) dispararBloqueio();
         }
 
-        function verificarBloqueio() {
-            const tempoBloqueio = localStorage.getItem('logiclick_locktime');
-            const agora = Date.now();
-
-            if (tempoBloqueio && agora < tempoBloqueio) {
-                document.getElementById('overlay-bloqueio').style.display = 'flex';
-                const restante = Math.ceil((tempoBloqueio - agora) / 1000);
-                const min = Math.floor(restante / 60);
-                const sec = restante % 60;
-                document.getElementById('timer-recuperacao').innerText = `${min}:${sec < 10 ? '0'+sec : sec}`;
-                setTimeout(verificarBloqueio, 1000);
-            } else {
-                if (vidas <= 0) {
-                    vidas = MAX_VIDAS;
-                    atualizarVidasUI();
+        function dispararBloqueio() {
+            const lockTime = localStorage.getItem('logi_lock') || Date.now() + 600000;
+            localStorage.setItem('logi_lock', lockTime);
+            document.getElementById('bloqueio').style.display = 'flex';
+            
+            const intervalo = setInterval(() => {
+                const restante = Math.ceil((lockTime - Date.now()) / 1000);
+                if(restante <= 0) {
+                    clearInterval(intervalo);
+                    vidas = 3;
+                    localStorage.removeItem('logi_lock');
+                    location.reload();
                 }
-                document.getElementById('overlay-bloqueio').style.display = 'none';
-            }
+                const m = Math.floor(restante / 60);
+                const s = restante % 60;
+                document.getElementById('timer').innerText = `${m}:${s < 10 ? '0'+s : s}`;
+            }, 1000);
         }
 
-        function perderVida() {
-            vidas--;
-            atualizarVidasUI();
-            if (vidas <= 0) {
-                const lockUntil = Date.now() + TEMPO_RECUPERACAO_MS;
-                localStorage.setItem('logiclick_locktime', lockUntil);
-                verificarBloqueio();
+        function novoJogo() {
+            if(localStorage.getItem('logi_lock')) return dispararBloqueio();
+            
+            const item = banco[Math.floor(Math.random() * banco.length)];
+            const [txt, certa, emoji] = item;
+            
+            document.getElementById('emoji').innerText = emoji;
+            document.getElementById('palavra').innerHTML = txt.replace(/_/g, '<span class="lacuna">?</span>');
+            
+            // Gerar opções
+            let opts = [certa];
+            const letras = "AEIOUBCDFGLMPRSTVXZ";
+            while(opts.length < 3) {
+                let r = letras[Math.floor(Math.random() * letras.length)];
+                if(!opts.includes(r)) opts.push(r);
             }
-        }
+            opts.sort(() => Math.random() - 0.5);
 
-        function gerar() {
-            if (vidas <= 0) return;
-            
-            const displayPalavra = document.getElementById("palavra");
-            const divOpcoes = document.getElementById("opcoes");
-            const feedback = document.getElementById("feedback");
-            const emojiDisplay = document.getElementById("emoji-display");
-
-            divOpcoes.innerHTML = "";
-            feedback.innerText = "";
-            bloqueado = false;
-
-            let item = bancoPalavras[Math.floor(Math.random() * bancoPalavras.length)];
-            let [texto, correta, emoji, tipo] = item;
-
-            emojiDisplay.innerText = emoji;
-            displayPalavra.innerHTML = texto.replace(/_/g, '<span class="lacuna">?</span>');
-
-            let distratores = (tipo === "vogal") ? ["A", "E", "I", "O", "U"] : 
-                             (tipo === "digrafo") ? ["RR", "SS", "LH", "CH", "NH"] : ["B", "C", "D", "P", "S"];
-            
-            let opcoes = [correta, ...distratores.filter(d => d !== correta).sort(() => 0.5 - Math.random()).slice(0, 2)];
-            opcoes = opcoes.sort(() => 0.5 - Math.random());
-
-            opcoes.forEach(opt => {
-                let btn = document.createElement("button");
-                btn.className = "card";
-                btn.innerText = opt;
+            const container = document.getElementById('container-opcoes');
+            container.innerHTML = '';
+            opts.forEach(o => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-opcao';
+                btn.innerText = o;
                 btn.onclick = () => {
-                    if (bloqueado) return;
-                    if (opt === correta) {
-                        bloqueado = true;
-                        feedback.innerText = "Correto! ✨";
-                        feedback.style.color = "var(--sucesso)";
-                        document.querySelectorAll(".lacuna").forEach(l => l.innerText = opt);
+                    if(o === certa) {
+                        btn.classList.add('correto');
+                        document.querySelectorAll('.lacuna').forEach(l => l.innerText = o);
                         fase++;
                         setTimeout(() => {
-                            document.getElementById("fase-badge").innerText = "Fase " + fase;
-                            gerar();
-                        }, 1200);
+                            document.getElementById('fase-txt').innerText = "FASE: " + fase;
+                            novoJogo();
+                        }, 800);
                     } else {
-                        feedback.innerText = "Errado! ❌";
-                        feedback.style.color = "var(--erro)";
-                        perderVida();
-                        btn.disabled = true;
-                        btn.style.background = "#ffcccc";
+                        btn.classList.add('errado');
+                        vidas--;
+                        atualizarVidas();
+                        setTimeout(() => btn.classList.remove('errado'), 500);
                     }
                 };
-                divOpcoes.appendChild(btn);
+                container.appendChild(btn);
             });
         }
 
-        // Inicialização
-        atualizarVidasUI();
-        verificarBloqueio();
-        if (vidas > 0) gerar();
+        atualizarVidas();
+        novoJogo();
     </script>
 </body>
 </html>
