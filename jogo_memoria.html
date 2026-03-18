@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LogiClick - Memória Animal</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Biblioteca Howler para melhor gerenciamento de áudio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
     <style>
         :root {
             --azul-primary: #1A1AAB;
@@ -91,6 +93,8 @@
             box-shadow: 0 8px 0 #ccc;
         }
 
+        .animal-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #ccc; }
+
         /* Cores de ativação */
         .animal-btn.active[id="0"] { background-color: #f8c291; border-color: #e67e22; }
         .animal-btn.active[id="1"] { background-color: #fff200; border-color: #f1c40f; }
@@ -133,7 +137,7 @@
     <div class="container">
         <div id="score-board">Nível: 0</div>
         <h1>Memória Animal 🐾</h1>
-        <p>Preste atenção nos sons dos bichinhos!</p>
+        <p>Ouça os bichinhos e repita a ordem!</p>
         
         <div class="animal-grid" id="grid">
             <button class="animal-btn" id="0">🐎</button>
@@ -142,39 +146,19 @@
             <button class="animal-btn" id="3">🐮</button>
         </div>
 
-        <div id="msg">Clique no botão para começar!</div>
-        <button id="start-btn">Começar Fazenda</button>
+        <div id="msg">Clique no botão para carregar a fazenda!</div>
+        <button id="start-btn">Começar Jogo</button>
     </div>
 
     <script>
-        // ENGINE DE ÁUDIO INTERNA (Web Audio API) - Não depende de arquivos externos!
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-        function playTone(freq, type, duration) {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-
-            oscillator.type = type;
-            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
-            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + duration);
-        }
-
-        // Sons que "lembram" os animais em estilo 8-bit
-        const animalSounds = {
-            0: () => { playTone(200, 'sawtooth', 0.4); playTone(300, 'sawtooth', 0.2); }, // Cavalo
-            1: () => { playTone(800, 'square', 0.1); playTone(900, 'square', 0.1); },   // Galinha
-            2: () => { playTone(400, 'triangle', 0.3); },                             // Pato
-            3: () => { playTone(150, 'sine', 0.6); },                                // Vaca
-            success: () => { playTone(523, 'sine', 0.1); playTone(659, 'sine', 0.1); playTone(783, 'sine', 0.2); },
-            error: () => { playTone(100, 'sawtooth', 0.5); }
+        // SONS REAIS - links diretos de repositórios estáveis
+        const sounds = {
+            0: new Howl({ src: ['https://upload.wikimedia.org/wikipedia/commons/d/d3/Neighing_Horse.ogg'], html5: true }), // Cavalo
+            1: new Howl({ src: ['https://upload.wikimedia.org/wikipedia/commons/4/4b/Hen_after_laying_an_egg.ogg'], html5: true }), // Galinha
+            2: new Howl({ src: ['https://upload.wikimedia.org/wikipedia/commons/0/07/Mallard_Ducks_Quacking_and_Eating.ogg'], html5: true }), // Pato
+            3: new Howl({ src: ['https://upload.wikimedia.org/wikipedia/commons/1/17/Big_Cow_Mooing_Low_Pitch.ogg'], html5: true }), // Vaca
+            success: new Howl({ src: ['https://actions.google.com/sounds/v1/multimedia/success_point.ogg'] }),
+            error: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/boing.ogg'] })
         };
 
         let sequence = [];
@@ -189,16 +173,16 @@
 
         function activateAnimal(id) {
             const btn = document.getElementById(id);
-            animalSounds[id](); 
+            sounds[id].play(); 
             btn.classList.add('active');
-            setTimeout(() => btn.classList.remove('active'), 500);
+            setTimeout(() => btn.classList.remove('active'), 800);
         }
 
         async function playSequence() {
             running = false; 
             msg.innerText = "Ouça com atenção...";
             for (let id of sequence) {
-                await new Promise(r => setTimeout(r, 800));
+                await new Promise(r => setTimeout(r, 1200));
                 activateAnimal(id);
             }
             running = true;
@@ -222,7 +206,7 @@
                 playerSequence.push(id);
 
                 if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
-                    animalSounds.error();
+                    sounds.error.play();
                     msg.innerText = "Ih! Errou a sequência.";
                     msg.style.color = "var(--erro)";
                     document.getElementById('grid').classList.add('wrong');
@@ -232,11 +216,11 @@
                 }
 
                 if (playerSequence.length === sequence.length) {
-                    animalSounds.success();
-                    msg.innerText = "Muito bem! Próximo nível.";
+                    sounds.success.play();
+                    msg.innerText = "Incrível! Próximo nível.";
                     msg.style.color = "var(--sucesso)";
                     running = false;
-                    setTimeout(nextLevel, 1200);
+                    setTimeout(nextLevel, 1500);
                 }
             };
         });
@@ -246,18 +230,19 @@
             level = 0;
             scoreBoard.innerText = "Nível: 0";
             msg.style.color = "#333";
-            msg.innerText = "Fim de jogo! Vamos de novo?";
+            msg.innerText = "Fim de jogo! Tente de novo.";
             document.getElementById('grid').classList.remove('wrong');
             startBtn.style.display = "inline-block";
             startBtn.innerText = "Reiniciar Fazenda";
         }
 
         startBtn.onclick = () => {
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+            // Desbloqueia o áudio no iOS/Android e Chrome
+            if (Howler.ctx && Howler.ctx.state === 'suspended') {
+                Howler.ctx.resume();
             }
             startBtn.style.display = "none";
-            msg.innerText = "Preparando...";
+            msg.innerText = "Carregando bichinhos...";
             nextLevel();
         };
     </script>
