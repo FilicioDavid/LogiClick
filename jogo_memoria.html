@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LogiClick - Memória Relâmpago</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Importação da Biblioteca Howler.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
     <style>
         :root {
             --azul-primary: #1A1AAB;
@@ -69,7 +71,6 @@
 
         h1 { color: var(--azul-primary); font-family: 'Montserrat', sans-serif; margin-bottom: 30px; }
 
-        /* Painel de Cores */
         .simon-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -147,30 +148,38 @@
     </div>
 
     <script>
+        // CONFIGURAÇÃO DOS SONS
+        const sounds = {
+            0: new Howl({ src: ['https://s3.amazonaws.com/freecodecamp/simonSound1.mp3'] }),
+            1: new Howl({ src: ['https://s3.amazonaws.com/freecodecamp/simonSound2.mp3'] }),
+            2: new Howl({ src: ['https://s3.amazonaws.com/freecodecamp/simonSound3.mp3'] }),
+            3: new Howl({ src: ['https://s3.amazonaws.com/freecodecamp/simonSound4.mp3'] }),
+            error: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/boing.ogg'], volume: 0.6 }),
+            next: new Howl({ src: ['https://actions.google.com/sounds/v1/multimedia/success_point.ogg'], volume: 0.4 })
+        };
+
         let sequence = [];
         let playerSequence = [];
         let level = 0;
         let running = false;
+        
         const buttons = document.querySelectorAll('.color-btn');
         const startBtn = document.getElementById('start-btn');
         const msg = document.getElementById('msg');
         const scoreBoard = document.getElementById('score-board');
 
-        function playSound(id) {
-            // Opcional: Adicionar sons curtos para cada cor
-        }
-
         function activateButton(id) {
             const btn = document.getElementById(id);
+            sounds[id].play(); // Toca o som da cor correspondente
             btn.classList.add('active');
             setTimeout(() => btn.classList.remove('active'), 400);
         }
 
         async function playSequence() {
-            running = false; // Bloqueia clique do jogador enquanto mostra
+            running = false; 
             msg.innerText = "Observe a sequência...";
             for (let id of sequence) {
-                await new Promise(r => setTimeout(r, 600));
+                await new Promise(r => setTimeout(r, 800));
                 activateButton(id);
             }
             running = true;
@@ -193,8 +202,8 @@
                 activateButton(id);
                 playerSequence.push(id);
 
-                // Verifica se errou
                 if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
+                    sounds.error.play(); // Toca som de erro
                     msg.innerText = "Ops! Sequência errada.";
                     msg.style.color = "var(--erro)";
                     document.getElementById('grid').classList.add('wrong');
@@ -203,12 +212,12 @@
                     return;
                 }
 
-                // Verifica se terminou a sequência atual
                 if (playerSequence.length === sequence.length) {
+                    sounds.next.play(); // Toca som de vitória da fase
                     msg.innerText = "Boa! Próxima fase...";
                     msg.style.color = "var(--sucesso)";
                     running = false;
-                    setTimeout(nextLevel, 1000);
+                    setTimeout(nextLevel, 1200);
                 }
             };
         });
