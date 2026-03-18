@@ -69,7 +69,6 @@
 
         h1 { color: var(--azul-primary); font-family: 'Montserrat', sans-serif; margin-bottom: 10px; }
 
-        /* Grid de Animais */
         .animal-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -116,7 +115,10 @@
             cursor: pointer;
             margin-top: 20px;
             box-shadow: 0 4px 15px rgba(26, 26, 171, 0.3);
+            transition: 0.3s;
         }
+
+        #start-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -140,10 +142,10 @@
         <p>Ouça os animais e repita a sequência!</p>
         
         <div class="animal-grid" id="grid">
-            <button class="animal-btn" id="0" title="Cavalo">🐎</button>
-            <button class="animal-btn" id="1" title="Galinha">🐔</button>
-            <button class="animal-btn" id="2" title="Pato">🦆</button>
-            <button class="animal-btn" id="3" title="Vaca">🐮</button>
+            <button class="animal-btn" id="0">🐎</button>
+            <button class="animal-btn" id="1">🐔</button>
+            <button class="animal-btn" id="2">🦆</button>
+            <button class="animal-btn" id="3">🐮</button>
         </div>
 
         <div id="msg">Clique no botão para começar!</div>
@@ -151,13 +153,13 @@
     </div>
 
     <script>
-        // SONS DOS ANIMAIS + SISTEMA
+        // CONFIGURAÇÃO DOS SONS (Links de áudio estáveis)
         const sounds = {
-            0: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-horse-neigh-620.mp3'] }), // Cavalo
-            1: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-chicken-cluck-1594.mp3'] }), // Galinha
-            2: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-duck-quack-1593.mp3'] }), // Pato
-            3: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-cow-moo-1595.mp3'] }), // Vaca
-            error: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/boing.ogg'], volume: 0.6 }),
+            0: new Howl({ src: ['https://www.soundjay.com/nature/horse-neigh-01.mp3'], html5: true }), // Cavalo
+            1: new Howl({ src: ['https://www.soundjay.com/nature/sounds/chicken-1.mp3'], html5: true }), // Galinha
+            2: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-duck-quack-1593.mp3'], html5: true }), // Pato
+            3: new Howl({ src: ['https://www.soundjay.com/nature/cow-moo-01.mp3'], html5: true }), // Vaca
+            error: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/boing.ogg'], volume: 0.5 }),
             success: new Howl({ src: ['https://actions.google.com/sounds/v1/multimedia/success_point.ogg'], volume: 0.4 })
         };
 
@@ -175,14 +177,14 @@
             const btn = document.getElementById(id);
             sounds[id].play(); 
             btn.classList.add('active');
-            setTimeout(() => btn.classList.remove('active'), 500);
+            setTimeout(() => btn.classList.remove('active'), 600);
         }
 
         async function playSequence() {
             running = false; 
             msg.innerText = "Ouça com atenção...";
             for (let id of sequence) {
-                await new Promise(r => setTimeout(r, 900));
+                await new Promise(r => setTimeout(r, 1100)); // Tempo entre animais
                 activateAnimal(id);
             }
             running = true;
@@ -217,7 +219,7 @@
 
                 if (playerSequence.length === sequence.length) {
                     sounds.success.play();
-                    msg.innerText = "Incrível! Você conhece a fazenda.";
+                    msg.innerText = "Incrível! Próxima fase...";
                     msg.style.color = "var(--sucesso)";
                     running = false;
                     setTimeout(nextLevel, 1500);
@@ -230,7 +232,7 @@
             level = 0;
             scoreBoard.innerText = "Nível: 0";
             msg.style.color = "#333";
-            msg.innerText = "Fim de papo! Vamos de novo?";
+            msg.innerText = "Fim de jogo! Tente de novo.";
             document.getElementById('grid').classList.remove('wrong');
             startBtn.style.display = "inline-block";
             startBtn.innerText = "Reiniciar Fazenda";
@@ -238,7 +240,7 @@
 
         startBtn.onclick = () => {
             startBtn.style.display = "none";
-            msg.innerText = "Preparando os bichos...";
+            msg.innerText = "Preparando a fazenda...";
             nextLevel();
         };
     </script>
