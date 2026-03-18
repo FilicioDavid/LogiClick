@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiClick - Caça ao Número</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-primary: #1A1AAB;
+            --fundo-creme: #FEFEE2;
+            --branco: #ffffff;
+            --sucesso: #28a745;
+            --erro: #e74c3c;
+            --sky-blue: #3498db;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background-color: var(--fundo-creme);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* Cabeçalho Padronizado */
+        header {
+            background-color: var(--azul-primary);
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn-voltar {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-voltar:hover {
+            background: white;
+            color: var(--azul-primary);
+        }
+
+        .titulo-header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        /* Área do Jogo */
+        .container {
+            padding: 30px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        #fase {
+            font-size: 1.1em;
+            font-weight: 600;
+            background: var(--sky-blue);
+            color: white;
+            display: inline-block;
+            padding: 6px 25px;
+            border-radius: 50px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        h1 {
+            color: var(--azul-primary);
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        /* Grid de Cartões */
+        .grid {
+            display: grid;
+            justify-content: center;
+            margin: 20px auto;
+            gap: 10px;
+            perspective: 1000px;
+            background: rgba(255,255,255,0.3);
+            padding: 15px;
+            border-radius: 20px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .card {
+            width: 55px;
+            height: 55px;
+            background-color: var(--branco);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            color: #444;
+        }
+
+        .card:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+            z-index: 2;
+        }
+
+        .card:active {
+            transform: scale(0.9);
+        }
+
+        /* Mensagens e Estados */
+        #mensagem {
+            font-size: 1.2em;
+            font-weight: 600;
+            height: 35px;
+            margin-top: 25px;
+            transition: 0.3s;
+        }
+
+        .acerto { 
+            background-color: var(--sucesso) !important; 
+            color: white !important; 
+            animation: pulse 0.5s ease;
+        }
+        
+        .erro { 
+            background-color: var(--erro) !important; 
+            color: white !important;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        @media (max-width: 500px) {
+            .card { width: 45px; height: 45px; font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="btn-voltar">← Voltar</a>
+        <h1 class="titulo-header">LogiClick</h1>
+        <div style="width: 85px;"></div>
+    </header>
+
+    <div class="container">
+        <div id="fase">Fase 1</div>
+        <h1 id="instrucao">Encontre o número</h1>
+        
+        <div class="grid" id="grid"></div>
+        
+        <div id="mensagem"></div>
+    </div>
+
+    <script>
+        let ultimoParIdx = -1;
+        let fase = 1;
+        let alvo = '';
+        let bloqueado = false;
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function obterParDificil() {
+            const pares = [
+                ['8', 'B'], ['0', 'O'], ['1', 'I'], ['5', 'S'], 
+                ['M', 'N'], ['W', 'V'], ['E', 'F'], ['Q', 'O'],
+                ['P', 'R'], ['X', 'K'], ['C', 'G'], ['U', 'V'],
+                ['3', '8'], ['6', 'G'], ['9', 'Q'], ['Z', '2'],
+                ['h', 'n'], ['u', 'v'], ['l', '1'], ['S', '8']
+            ];
+            
+            let novoIdx;
+            do {
+                novoIdx = Math.floor(Math.random() * pares.length);
+            } while (novoIdx === ultimoParIdx);
+            
+            ultimoParIdx = novoIdx;
+            return pares[novoIdx];
+        }
+
+        function gerar() {
+            const grid = document.getElementById("grid");
+            const labelFase = document.getElementById("fase");
+            const mensagem = document.getElementById("mensagem");
+            const titulo = document.getElementById("instrucao");
+            
+            grid.innerHTML = "";
+            mensagem.innerText = "";
+            bloqueado = false;
+
+            // Dificuldade progressiva
+            let colunas = Math.min(2 + fase, 10); 
+            let tamanhoCard = 55;
+            
+            // Ajusta tamanho para caber na tela se houver muitos cards
+            if (colunas > 6) tamanhoCard = 45;
+            if (colunas > 8) tamanhoCard = 38;
+
+            grid.style.gridTemplateColumns = `repeat(${colunas}, ${tamanhoCard}px)`;
+
+            const [charAlvo, charIntruso] = obterParDificil();
+            alvo = charAlvo;
+            titulo.innerHTML = `Clique no <strong style="color:var(--azul-primary)">"${alvo}"</strong>`;
+
+            let qtdTotal = colunas * colunas;
+            let itens = Array(qtdTotal - 1).fill(charIntruso);
+            itens.push(alvo);
+            itens = shuffle(itens);
+
+            itens.forEach(char => {
+                let div = document.createElement("div");
+                div.className = "card";
+                div.style.width = tamanhoCard + "px";
+                div.style.height = tamanhoCard + "px";
+                div.innerText = char;
+
+                div.onclick = function() {
+                    if (bloqueado) return;
+
+                    if (char === alvo) {
+                        bloqueado = true;
+                        div.classList.add('acerto');
+                        mensagem.style.color = "var(--sucesso)";
+                        mensagem.innerText = "Excelente! Percepção afiada.";
+                        
+                        fase++;
+                        setTimeout(() => {
+                            labelFase.innerText = "Fase " + fase;
+                            gerar();
+                        }, 1000);
+                    } else {
+                        div.classList.add('erro');
+                        mensagem.style.color = "var(--erro)";
+                        mensagem.innerText = `Ops! Esse é o "${char}".`;
+                        setTimeout(() => {
+                            div.classList.remove('erro');
+                            mensagem.innerText = "";
+                        }, 600);
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        gerar();
+    </script>
+</body>
+</html>

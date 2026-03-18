@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiClick - Ordem Alfabética</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-primary: #1A1AAB;
+            --fundo-creme: #FEFEE2;
+            --laranja: #e67e22;
+            --sucesso: #28a745;
+            --erro: #e74c3c;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background-color: var(--fundo-creme);
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Cabeçalho Padronizado */
+        header {
+            background-color: var(--azul-primary);
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+        .btn-voltar {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-voltar:hover {
+            background: white;
+            color: var(--azul-primary);
+        }
+
+        .titulo-header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        /* Container do Jogo */
+        .container {
+            padding: 40px 20px;
+        }
+
+        #fase {
+            font-size: 1.1em;
+            background: var(--laranja);
+            color: white;
+            display: inline-block;
+            padding: 8px 25px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+        }
+
+        h1 { 
+            color: var(--azul-primary);
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 30px;
+        }
+
+        /* Grid e Cards Modernizados */
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .card {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 18px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+            color: var(--azul-primary);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+            background-color: #f0f0ff;
+        }
+
+        .card.selecionado {
+            background-color: var(--sucesso);
+            color: white;
+            transform: scale(0.9);
+            pointer-events: none;
+            box-shadow: none;
+        }
+
+        #mensagem {
+            font-size: 1.2em;
+            font-weight: 600;
+            height: 40px;
+            margin-top: 30px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .sucesso { color: var(--sucesso); animation: pop 0.3s ease; }
+        .erro { color: var(--erro); animation: shake 0.4s ease; }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="btn-voltar">← Voltar</a>
+        <h1 class="titulo-header">LogiClick</h1>
+        <div style="width: 85px;"></div> <!-- Espaçador para centralizar título -->
+    </header>
+
+    <div class="container">
+        <div id="fase">Fase 1</div>
+        <h1>Coloque em ordem alfabética</h1>
+
+        <div class="grid" id="grid"></div>
+        <div id="mensagem"></div>
+    </div>
+
+    <script>
+        let fase = 1;
+        let letrasAtuais = [];
+        let letrasOrdenadas = [];
+        let proximoIndice = 0;
+
+        function gerar() {
+            const grid = document.getElementById("grid");
+            const mensagem = document.getElementById("mensagem");
+            const labelFase = document.getElementById("fase");
+            
+            grid.innerHTML = "";
+            mensagem.innerText = "";
+            mensagem.className = "";
+            proximoIndice = 0;
+
+            let qtdLetras = Math.min(3 + (fase - 1), 12);
+            const alfabeto = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            
+            let start = Math.floor(Math.random() * (alfabeto.length - qtdLetras));
+            letrasOrdenadas = alfabeto.slice(start, start + qtdLetras);
+            letrasAtuais = [...letrasOrdenadas].sort(() => Math.random() - 0.5);
+
+            letrasAtuais.forEach(letra => {
+                let div = document.createElement("div");
+                div.className = "card";
+                div.innerText = letra;
+
+                div.onclick = function() {
+                    if (letra === letrasOrdenadas[proximoIndice]) {
+                        div.classList.add("selecionado");
+                        proximoIndice++;
+                        
+                        if (proximoIndice === letrasOrdenadas.length) {
+                            mensagem.className = "sucesso";
+                            mensagem.innerText = "Excelente! Próximo nível...";
+                            fase++;
+                            setTimeout(() => {
+                                labelFase.innerText = "Fase " + fase;
+                                gerar();
+                            }, 1200);
+                        }
+                    } else {
+                        mensagem.className = "erro";
+                        mensagem.innerText = `Ops! A letra correta era "${letrasOrdenadas[proximoIndice]}"`;
+                        
+                        setTimeout(gerar, 1500);
+                    }
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        gerar();
+    </script>
+</body>
+</html>

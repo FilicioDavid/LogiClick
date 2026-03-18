@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiClick - Plataforma Cognitiva</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-primary: #1A1AAB;
+            --azul-hover: #0d0d7a;
+            --fundo-creme: #FEFEE2;
+            --branco: #ffffff;
+            --texto: #333;
+        }
+
+        /* Estilos Gerais */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--fundo-creme);
+            text-align: center;
+            color: var(--texto);
+        }
+
+        /* Cabeçalho Modernizado */
+        header {
+            background-color: var(--azul-primary);
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .logo-escola {
+            height: 70px;
+            width: auto;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .titulo-plataforma {
+            font-size: 48px;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+
+        /* Título Principal */
+        .main-title {
+            margin-top: 60px;
+            font-size: 2.5rem;
+            color: var(--azul-primary);
+            font-weight: 700;
+        }
+
+        /* Grid de Jogos */
+        .grid-menu {
+            display: grid;
+            /* Ajuste para 3 colunas ou menos dependendo da tela */
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        /* Card Moderno */
+        .card-menu {
+            background: var(--branco);
+            border: none;
+            border-radius: 24px;
+            padding: 40px 20px;
+            text-decoration: none;
+            color: var(--texto);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+        }
+
+        .icon-wrapper {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .card-menu p {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 600;
+            color: var(--azul-primary);
+        }
+
+        /* Efeitos de Hover */
+        .card-menu:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 15px 30px rgba(26, 26, 171, 0.2);
+            border-color: var(--azul-primary);
+            background-color: #fff;
+        }
+
+        .card-menu:hover .icon-wrapper {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .card-menu:active {
+            transform: scale(0.95);
+        }
+
+        /* Responsividade para telas pequenas */
+        @media (max-width: 600px) {
+            header { padding: 0 15px; height: 80px; }
+            .titulo-plataforma { font-size: 32px; }
+            .logo-escola { height: 50px; }
+            .main-title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.jpg" alt="Logo Escola" class="logo-escola">
+        <h1 class="titulo-plataforma">LogiClick</h1>
+        <div style="width: 70px;"></div> </header>
+
+    <h2 class="main-title">Jogos Cognitivos</h2>
+
+    <div class="grid-menu">
+
+        <a href="jogo_numeros.html" class="card-menu">
+            <span class="icon-wrapper">🎯</span>
+            <p>Caça ao Número</p>
+        </a>
+
+        <a href="jogo_sequencia.html" class="card-menu">
+            <span class="icon-wrapper">🔢</span>
+            <p>Sequência Lógica</p>
+        </a>
+
+        <a href="jogo_alfabeto.html" class="card-menu">
+            <span class="icon-wrapper">🔤</span>
+            <p>Ordem Alfabética</p>
+        </a>
+
+        <a href="jogo_palavras.html" class="card-menu">
+            <span class="icon-wrapper">🧠</span>
+            <p>Complete a Palavra</p>
+        </a>
+
+        <a href="jogo_kohs.html" class="card-menu">
+            <span class="icon-wrapper">🧊</span>
+            <p>Cubo de Kohs</p>
+        </a>
+
+    </div>
+
+</body>
+</html>
