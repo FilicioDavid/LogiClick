@@ -60,10 +60,10 @@
         /* Grid de Jogos */
         .grid-menu {
             display: grid;
-            /* Ajuste para 3 colunas ou menos dependendo da tela */
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            /* O grid se ajusta para 3 colunas em telas grandes e menos em telas menores */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 50px auto;
             padding: 20px;
         }
@@ -121,6 +121,7 @@
             .titulo-plataforma { font-size: 32px; }
             .logo-escola { height: 50px; }
             .main-title { font-size: 1.8rem; }
+            .grid-menu { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -129,7 +130,8 @@
     <header>
         <img src="logo.jpg" alt="Logo Escola" class="logo-escola">
         <h1 class="titulo-plataforma">LogiClick</h1>
-        <div style="width: 70px;"></div> </header>
+        <div style="width: 70px;"></div> 
+    </header>
 
     <h2 class="main-title">Jogos Cognitivos</h2>
 
@@ -158,6 +160,12 @@
         <a href="jogo_kohs.html" class="card-menu">
             <span class="icon-wrapper">🧊</span>
             <p>Cubo de Kohs</p>
+        </a>
+
+        <!-- Novo Jogo: Memória Relâmpago -->
+        <a href="jogo_memoria.html" class="card-menu">
+            <span class="icon-wrapper">⚡</span>
+            <p>Memória Relâmpago</p>
         </a>
 
     </div>

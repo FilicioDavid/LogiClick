@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiClick - Memória Relâmpago</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-primary: #1A1AAB;
+            --fundo-creme: #FEFEE2;
+            --branco: #ffffff;
+            --sucesso: #28a745;
+            --erro: #e74c3c;
+            --amarelo: #f1c40f;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            background-color: var(--fundo-creme);
+            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: var(--azul-primary);
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn-voltar {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-voltar:hover { background: white; color: var(--azul-primary); }
+
+        .titulo-header { font-family: 'Montserrat', sans-serif; font-size: 24px; margin: 0; }
+
+        .container { padding: 40px 20px; max-width: 600px; margin: 0 auto; }
+
+        #score-board {
+            font-size: 1.2em;
+            background: var(--amarelo);
+            color: #333;
+            display: inline-block;
+            padding: 8px 25px;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(241, 196, 15, 0.3);
+        }
+
+        h1 { color: var(--azul-primary); font-family: 'Montserrat', sans-serif; margin-bottom: 30px; }
+
+        /* Painel de Cores */
+        .simon-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .color-btn {
+            width: 140px;
+            height: 140px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.6;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+        }
+
+        .color-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,0.1); }
+
+        .red { background-color: #ff4757; }
+        .blue { background-color: #1e90ff; }
+        .green { background-color: #2ed573; }
+        .yellow { background-color: #ffa502; }
+
+        .active { opacity: 1 !important; transform: scale(1.05); filter: brightness(1.2); box-shadow: 0 0 20px rgba(255,255,255,0.8); }
+
+        #msg { margin-top: 30px; font-size: 1.2em; font-weight: 600; min-height: 30px; }
+
+        #start-btn {
+            background: var(--azul-primary);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        #start-btn:hover { transform: scale(1.05); background: #0d0d7a; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .wrong { animation: shake 0.4s ease; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="btn-voltar">← Voltar</a>
+        <h1 class="titulo-header">LogiClick</h1>
+        <div style="width: 85px;"></div>
+    </header>
+
+    <div class="container">
+        <div id="score-board">Sequência: 0</div>
+        <h1>Memória Relâmpago</h1>
+        
+        <div class="simon-grid" id="grid">
+            <button class="color-btn red" id="0"></button>
+            <button class="color-btn blue" id="1"></button>
+            <button class="color-btn green" id="2"></button>
+            <button class="color-btn yellow" id="3"></button>
+        </div>
+
+        <div id="msg">Aperte o botão para começar!</div>
+        <button id="start-btn">Começar Jogo</button>
+    </div>
+
+    <script>
+        let sequence = [];
+        let playerSequence = [];
+        let level = 0;
+        let running = false;
+        const buttons = document.querySelectorAll('.color-btn');
+        const startBtn = document.getElementById('start-btn');
+        const msg = document.getElementById('msg');
+        const scoreBoard = document.getElementById('score-board');
+
+        function playSound(id) {
+            // Opcional: Adicionar sons curtos para cada cor
+        }
+
+        function activateButton(id) {
+            const btn = document.getElementById(id);
+            btn.classList.add('active');
+            setTimeout(() => btn.classList.remove('active'), 400);
+        }
+
+        async function playSequence() {
+            running = false; // Bloqueia clique do jogador enquanto mostra
+            msg.innerText = "Observe a sequência...";
+            for (let id of sequence) {
+                await new Promise(r => setTimeout(r, 600));
+                activateButton(id);
+            }
+            running = true;
+            msg.innerText = "Sua vez!";
+        }
+
+        function nextLevel() {
+            level++;
+            scoreBoard.innerText = `Sequência: ${level}`;
+            playerSequence = [];
+            sequence.push(Math.floor(Math.random() * 4));
+            playSequence();
+        }
+
+        buttons.forEach(btn => {
+            btn.onclick = () => {
+                if (!running) return;
+                
+                const id = parseInt(btn.id);
+                activateButton(id);
+                playerSequence.push(id);
+
+                // Verifica se errou
+                if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
+                    msg.innerText = "Ops! Sequência errada.";
+                    msg.style.color = "var(--erro)";
+                    document.getElementById('grid').classList.add('wrong');
+                    running = false;
+                    setTimeout(resetGame, 1000);
+                    return;
+                }
+
+                // Verifica se terminou a sequência atual
+                if (playerSequence.length === sequence.length) {
+                    msg.innerText = "Boa! Próxima fase...";
+                    msg.style.color = "var(--sucesso)";
+                    running = false;
+                    setTimeout(nextLevel, 1000);
+                }
+            };
+        });
+
+        function resetGame() {
+            sequence = [];
+            level = 0;
+            scoreBoard.innerText = "Sequência: 0";
+            msg.style.color = "#333";
+            msg.innerText = "Fim de jogo! Tente novamente.";
+            document.getElementById('grid').classList.remove('wrong');
+            startBtn.style.display = "inline-block";
+            startBtn.innerText = "Jogar Novamente";
+        }
+
+        startBtn.onclick = () => {
+            startBtn.style.display = "none";
+            msg.innerText = "Prepare-se...";
+            nextLevel();
+        };
+    </script>
+</body>
+</html>
