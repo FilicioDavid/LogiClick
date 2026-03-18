@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LogiClick - Memória Animal</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
     <style>
         :root {
             --azul-primary: #1A1AAB;
@@ -92,13 +91,11 @@
             box-shadow: 0 8px 0 #ccc;
         }
 
-        .animal-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #ccc; }
-
-        /* Cores de destaque para cada animal ao ativar */
-        .animal-btn.active[id="0"] { background-color: #f8c291; border-color: #e67e22; } /* Cavalo */
-        .animal-btn.active[id="1"] { background-color: #fff200; border-color: #f1c40f; } /* Galinha */
-        .animal-btn.active[id="2"] { background-color: #7ed6df; border-color: #3498db; } /* Pato */
-        .animal-btn.active[id="3"] { background-color: #a29bfe; border-color: #6c5ce7; } /* Vaca */
+        /* Cores de ativação */
+        .animal-btn.active[id="0"] { background-color: #f8c291; border-color: #e67e22; }
+        .animal-btn.active[id="1"] { background-color: #fff200; border-color: #f1c40f; }
+        .animal-btn.active[id="2"] { background-color: #7ed6df; border-color: #3498db; }
+        .animal-btn.active[id="3"] { background-color: #a29bfe; border-color: #6c5ce7; }
 
         .active { transform: scale(1.1); box-shadow: 0 0 25px rgba(0,0,0,0.2) !important; z-index: 5; }
 
@@ -115,10 +112,7 @@
             cursor: pointer;
             margin-top: 20px;
             box-shadow: 0 4px 15px rgba(26, 26, 171, 0.3);
-            transition: 0.3s;
         }
-
-        #start-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -139,7 +133,7 @@
     <div class="container">
         <div id="score-board">Nível: 0</div>
         <h1>Memória Animal 🐾</h1>
-        <p>Ouça os animais e repita a sequência!</p>
+        <p>Preste atenção nos sons dos bichinhos!</p>
         
         <div class="animal-grid" id="grid">
             <button class="animal-btn" id="0">🐎</button>
@@ -153,14 +147,34 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DOS SONS (Links de áudio estáveis)
-        const sounds = {
-            0: new Howl({ src: ['https://www.soundjay.com/nature/horse-neigh-01.mp3'], html5: true }), // Cavalo
-            1: new Howl({ src: ['https://www.soundjay.com/nature/sounds/chicken-1.mp3'], html5: true }), // Galinha
-            2: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-duck-quack-1593.mp3'], html5: true }), // Pato
-            3: new Howl({ src: ['https://www.soundjay.com/nature/cow-moo-01.mp3'], html5: true }), // Vaca
-            error: new Howl({ src: ['https://actions.google.com/sounds/v1/cartoon/boing.ogg'], volume: 0.5 }),
-            success: new Howl({ src: ['https://actions.google.com/sounds/v1/multimedia/success_point.ogg'], volume: 0.4 })
+        // ENGINE DE ÁUDIO INTERNA (Web Audio API) - Não depende de arquivos externos!
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type, duration) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+
+        // Sons que "lembram" os animais em estilo 8-bit
+        const animalSounds = {
+            0: () => { playTone(200, 'sawtooth', 0.4); playTone(300, 'sawtooth', 0.2); }, // Cavalo
+            1: () => { playTone(800, 'square', 0.1); playTone(900, 'square', 0.1); },   // Galinha
+            2: () => { playTone(400, 'triangle', 0.3); },                             // Pato
+            3: () => { playTone(150, 'sine', 0.6); },                                // Vaca
+            success: () => { playTone(523, 'sine', 0.1); playTone(659, 'sine', 0.1); playTone(783, 'sine', 0.2); },
+            error: () => { playTone(100, 'sawtooth', 0.5); }
         };
 
         let sequence = [];
@@ -175,16 +189,16 @@
 
         function activateAnimal(id) {
             const btn = document.getElementById(id);
-            sounds[id].play(); 
+            animalSounds[id](); 
             btn.classList.add('active');
-            setTimeout(() => btn.classList.remove('active'), 600);
+            setTimeout(() => btn.classList.remove('active'), 500);
         }
 
         async function playSequence() {
             running = false; 
             msg.innerText = "Ouça com atenção...";
             for (let id of sequence) {
-                await new Promise(r => setTimeout(r, 1100)); // Tempo entre animais
+                await new Promise(r => setTimeout(r, 800));
                 activateAnimal(id);
             }
             running = true;
@@ -208,8 +222,8 @@
                 playerSequence.push(id);
 
                 if (playerSequence[playerSequence.length - 1] !== sequence[playerSequence.length - 1]) {
-                    sounds.error.play();
-                    msg.innerText = "Ih! O bicho foi outro...";
+                    animalSounds.error();
+                    msg.innerText = "Ih! Errou a sequência.";
                     msg.style.color = "var(--erro)";
                     document.getElementById('grid').classList.add('wrong');
                     running = false;
@@ -218,11 +232,11 @@
                 }
 
                 if (playerSequence.length === sequence.length) {
-                    sounds.success.play();
-                    msg.innerText = "Incrível! Próxima fase...";
+                    animalSounds.success();
+                    msg.innerText = "Muito bem! Próximo nível.";
                     msg.style.color = "var(--sucesso)";
                     running = false;
-                    setTimeout(nextLevel, 1500);
+                    setTimeout(nextLevel, 1200);
                 }
             };
         });
@@ -232,15 +246,18 @@
             level = 0;
             scoreBoard.innerText = "Nível: 0";
             msg.style.color = "#333";
-            msg.innerText = "Fim de jogo! Tente de novo.";
+            msg.innerText = "Fim de jogo! Vamos de novo?";
             document.getElementById('grid').classList.remove('wrong');
             startBtn.style.display = "inline-block";
             startBtn.innerText = "Reiniciar Fazenda";
         }
 
         startBtn.onclick = () => {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             startBtn.style.display = "none";
-            msg.innerText = "Preparando a fazenda...";
+            msg.innerText = "Preparando...";
             nextLevel();
         };
     </script>
